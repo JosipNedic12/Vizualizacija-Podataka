@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<style>
+  .axis {
+    font: 10px sans-serif;
+  }
+
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
+</style>
+<script src="https://d3js.org/d3.v6.min.js" charset="utf-8"></script>
+</head>
+<body>
+
+<script>
+  let data = [
+    {"PPG": "2.02.  TEHNIČKE ZNANOSTI / Brodogradnja", "ECTS": 120, "Naziv": "Brodogradnja", "Sifra": 2375},
+    {"PPG": "2.12.  TEHNIČKE ZNANOSTI / Tehnologija prometa i transport", "ECTS": 180, "Naziv": "Logistika i mobilnost", "Sifra": 2376},
+    {"PPG": null, "ECTS": 180, "Naziv": "Računarstvo; smjer: Programsko računarstvo", "Sifra": 2378},
+    {"PPG": "3.02.  BIOMEDICINA I ZDRAVSTVO / Kliničke medicinske znanosti", "ECTS": 60, "Naziv": "Sudska medicina", "Sifra": 2380},
+    {"PPG": "3.02.  BIOMEDICINA I ZDRAVSTVO / Kliničke medicinske znanosti", "ECTS": 60, "Naziv": "Nefrologija", "Sifra": 2381},
+    {"PPG": "2.11.  TEHNIČKE ZNANOSTI / Strojarstvo", "ECTS": 180, "Naziv": "Mehatronika", "Sifra": 2383},
+    {"PPG": "1.04.  PRIRODNE ZNANOSTI / Kemija", "ECTS": 120, "Naziv": "Kemija; istraživački smjer", "Sifra": 2385},
+    {"PPG": "5.01.  DRUŠTVENE ZNANOSTI / Ekonomija", "ECTS": 120, "Naziv": "Poslovna ekonomija i globalizacija", "Sifra": 2387},
+    {"PPG": "3.02.  BIOMEDICINA I ZDRAVSTVO / Kliničke medicinske znanosti", "ECTS": 120, "Naziv": "Sestrinstvo", "Sifra": 2454},
+    {"PPG": "3.02.  BIOMEDICINA I ZDRAVSTVO / Kliničke medicinske znanosti", "ECTS": 60, "Naziv": "Kardiotorakalna kirurgija", "Sifra": 2455},
+    {"PPG": "6.03.  HUMANISTIČKE ZNANOSTI / Filologija", "ECTS": 90, "Naziv": "Engleski jezik i književnost", "Sifra": 2457},
+    {"PPG": "6.07.  HUMANISTIČKE ZNANOSTI / Arheologija", "ECTS": 90, "Naziv": "Arheologija", "Sifra": 2458},
+    {"PPG": "6.05.  HUMANISTIČKE ZNANOSTI / Povijest umjetnosti", "ECTS": 60, "Naziv": "Povijest umjetnosti", "Sifra": 2459}
+  ];
+
+  let elementWidth = 600;
+  let elementHeight = 400;
+  let height = 150;
+  let width = 70;
+
+  let element = d3.select("body")
+    .append("svg")
+    .attr("width", elementWidth + (width * 2))
+    .attr("height", elementHeight + (height * 2))
+    .append("g")
+    .attr("transform", "translate(" + width + "," + height + ")");
+
+  let x = d3.scaleBand()
+    .domain(data.map(function(d) { return d.Sifra; }))
+    .range([0, elementWidth])
+    .padding(0.1);
+
+  let y = d3.scaleLinear()
+    .domain([0, d3.max(data.map(function(d) { return d.ECTS; }))])
+    .nice()
+    .range([elementHeight, 0]);
+
+  let linechart = element.append("path")
+    .attr("class", "line")
+    .attr("d", d3.line()
+      .x(function(d) { return x(d.Sifra) + x.bandwidth() / 2; })
+      .y(function(d) { return y(d.ECTS); })
+    )
+    .style("fill", "none")
+    .style("stroke", "steelblue")
+    .style("stroke-width", 2);
+
+  element.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + elementHeight + ")")
+    .call(d3.axisBottom(x));
+
+  element.append("g")
+    .attr("class", "y axis")
+    .call(d3.axisLeft(y));
+
+</script>
+
+</body>
+</html>

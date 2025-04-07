@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stupčasti Graf - D3.js</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .bar {
+            fill: steelblue;
+        }
+
+        .axis-label {
+            font-size: 12px;
+            text-anchor: middle;
+        }
+
+        .axis path,
+        .axis line {
+            shape-rendering: crispEdges;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Stupčasti Graf ECTS bodova po studiju</h1>
+
+    <svg width="800" height="500"></svg>
+
+    <script>
+        // JSON podaci
+        const data = [
+            { "Naziv": "Brodogradnja", "ECTS": 120 },
+            { "Naziv": "Logistika i mobilnost", "ECTS": 180 },
+            { "Naziv": "Računarstvo; smjer: Programsko računarstvo", "ECTS": 180 },
+            { "Naziv": "Sudska medicina", "ECTS": 60 },
+            { "Naziv": "Nefrologija", "ECTS": 60 },
+            { "Naziv": "Mehatronika", "ECTS": 180 },
+            { "Naziv": "Kemija; istraživački smjer", "ECTS": 120 },
+            { "Naziv": "Poslovna ekonomija i globalizacija", "ECTS": 120 },
+            { "Naziv": "Povijest umjetnosti","ECTS": 60},
+            { "Naziv": "Arheologija (dvopredmetni)","ECTS": 90}
+        ];
+
+        // Dimenzije grafike
+        const width = 800;
+        const height = 500; // Povećana visina za dodatni prostor
+        const margin = { top: 20, right: 20, bottom: 80, left: 60 }; // Povećana donja marginu
+
+        // Postavke kvantitativnih skala
+        const xScale = d3.scaleBand()
+            .domain(data.map(d => d.Naziv)) // Koristimo nazive studija za X-osi
+            .range([margin.left, width - margin.right])
+            .padding(0.1); // Povećava razmak između stupaca
+
+        const yScale = d3.scaleLinear()
+            .domain([0, d3.max(data, d => d.ECTS)]) // Skala od 0 do maksimalnog ECTS-a
+            .nice() // Dodaje "ljepše" skale, npr. višestruko od 10 ili 100
+            .range([height - margin.bottom, margin.top]);
+
+        // Dodavanje SVG elementa za graf
+        const svg = d3.select("svg");
+
+        // Kreiraj stupce
+        svg.selectAll(".bar")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("class", "bar")
+            .attr("x", d => xScale(d.Naziv)) // X pozicija stupca
+            .attr("y", d => yScale(d.ECTS)) // Y pozicija stupca (visina stupca)
+            .attr("width", xScale.bandwidth()) // Širina svakog stupca
+            .attr("height", d => height - margin.bottom - yScale(d.ECTS)); // Visina svakog stupca
+
+        // Dodavanje osi X
+        svg.append("g")
+            .attr("transform", `translate(0,${height - margin.bottom})`)
+            .call(d3.axisBottom(xScale))
+            .selectAll("text")
+            .style("text-anchor", "middle")
+            .style("font-size", "10px")
+            .attr("transform", "rotate(-45)") // Rotira oznake na X-osi za bolju čitljivost
+
+        // Dodavanje osi Y
+        svg.append("g")
+            .attr("transform", `translate(${margin.left}, 0)`)
+            .call(d3.axisLeft(yScale))
+            .selectAll("text")
+            .style("font-size", "12px");
+
+        // Dodavanje naziva za X-osi
+        svg.append("text")
+            .attr("transform", `translate(${width / 2},${height - 10})`) // Smještanje na sredinu X-osi
+            .style("text-anchor", "middle")
+            .text("Studijski program");
+
+        // Dodavanje naziva za Y-osi
+        svg.append("text")
+            .attr("transform", "rotate(-90)") // Rotira tekst za Y-os
+            .attr("y", margin.left - 50) // Povećana udaljenost od Y-osi
+            .attr("x", -height / 2)
+            .style("text-anchor", "middle")
+            .text("ECTS bodovi");
+
+    </script>
+</body>
+</html>
