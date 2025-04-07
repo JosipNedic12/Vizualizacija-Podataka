@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Zadatak 3 - Translacija pravokutnika</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <h2>Zadatak 3 – Translacija pravokutnika pomoću D3 i SVG transformacija</h2>
+  <svg width="500" height="400" id="svgCanvas" style="border:1px solid #ccc;"></svg>
+
+  <script>
+    const svgWidth = 500;
+    const svgHeight = 400;
+
+    const rectWidth = 100;
+    const rectHeight = 60;
+
+    const startX = svgWidth - rectWidth;
+    const startY = svgHeight - rectHeight;
+
+    const svg = d3.select("#svgCanvas");
+
+    const rect = svg.append("rect")
+      .attr("width", rectWidth)
+      .attr("height", rectHeight)
+      .attr("fill", "orange")
+      .attr("transform", `translate(${startX}, ${startY})`);
+
+
+    rect.transition()
+      .duration(1000)
+      .attr("transform", `translate(0, ${startY})`)
+      .on("end", () => {
+        rect.transition()
+          .duration(1000)
+          .attr("transform", `translate(0, 0)`);
+      });
+  </script>
+</body>
+</html>

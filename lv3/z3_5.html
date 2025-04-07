@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simulacija Sunčevog sustava</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    svg {
+      background-color: #000;
+    }
+
+    .planet {
+      transition: transform 1s;
+    }
+
+    .sun {
+      fill: yellow;
+    }
+  </style>
+</head>
+<body>
+  <h2>Simulacija Sunčevog sustava</h2>
+  <svg width="1000" height="1000" id="svgCanvas"></svg>
+
+  <script>
+    const svg = d3.select("#svgCanvas");
+    const width = 1000;
+    const height = 1000;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const sunRadius = 50;
+
+    const planets = [
+      { name: "Mercury", radius: 10, orbitRadius: 70, color: "gray", speed: 0.02 },
+      { name: "Venus", radius: 20, orbitRadius: 120, color: "yellow", speed: 0.015 },
+      { name: "Earth", radius: 25, orbitRadius: 180, color: "blue", speed: 0.011 },
+      { name: "Mars", radius: 22, orbitRadius: 250, color: "red", speed: 0.008 },
+      { name: "Jupiter", radius: 40, orbitRadius: 350, color: "orange", speed: 0.0055 },
+      { name: "Saturn", radius: 35, orbitRadius: 450, color: "goldenrod", speed: 0.0038 },
+      { name: "Uranus", radius: 30, orbitRadius: 550, color: "lightblue", speed: 0.0028 },
+      { name: "Neptune", radius: 30, orbitRadius: 650, color: "blue", speed: 0.002 }
+    ];
+
+    const sun = svg.append("circle")
+      .attr("cx", centerX)
+      .attr("cy", centerY)
+      .attr("r", sunRadius)
+      .attr("class", "sun");
+
+    const planetGroup = svg.append("g");
+
+    planets.forEach((planet, i) => {
+      const planetElem = planetGroup.append("circle")
+        .attr("cx", centerX + planet.orbitRadius)
+        .attr("cy", centerY)
+        .attr("r", planet.radius)
+        .attr("fill", planet.color) // Correct color assignment here
+        .attr("class", "planet");
+
+      animatePlanet(planetElem, planet);
+    });
+
+    function animatePlanet(planetElem, planet) {
+      let angle = 0;
+      function updatePlanetPosition() {
+        angle += planet.speed;
+        const x = centerX + planet.orbitRadius * Math.cos(angle);
+        const y = centerY + planet.orbitRadius * Math.sin(angle);
+
+        planetElem.transition()
+          .duration(50)
+          .attr("cx", x)
+          .attr("cy", y)
+          .on("end", updatePlanetPosition);
+      }
+
+      updatePlanetPosition();
+    }
+  </script>
+</body>
+</html>

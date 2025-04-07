@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Zadatak 2 - Višestruki kvadrati s nasumičnim animacijama</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <h2>Zadatak 2 – Autonomno dodavanje 10 kvadrata</h2>
+  <svg width="600" height="600" id="svgCanvas" style="border:1px solid #ccc;"></svg>
+
+  <script>
+    const svgWidth = 600;
+    const svgHeight = 600;
+    const numSquares = 10;
+
+    const svg = d3.select("#svgCanvas");
+
+    function generateSquares() {
+      svg.selectAll("*").remove(); // očisti stari sadržaj
+
+      const squares = [];
+
+      for (let i = 0; i < numSquares; i++) {
+        const size = 50;
+        const x = Math.random() * (svgWidth - size);
+        const y = Math.random() * (svgHeight - size);
+        const fillDuration = 2000 + Math.random() * 3000; // 2-5 sekundi
+        const expandDuration = 1500 + Math.random() * 2000; // 1.5-3.5 sekundi
+
+        const square = svg.append("rect")
+          .attr("x", x)
+          .attr("y", y)
+          .attr("width", size)
+          .attr("height", size)
+          .attr("fill", "none")
+          .attr("stroke", d3.schemeCategory10[i % 10])
+          .attr("stroke-width", 2)
+          .attr("opacity", 1);
+
+        // Pokreni prvu tranziciju (ispuna)
+        square.transition()
+          .delay(500)
+          .duration(fillDuration)
+          .attr("fill", d3.schemeCategory10[i % 10])
+          .attr("fill-opacity",0)
+          .transition()
+          .duration(3000)
+          .attr("fill-opacity",1)
+          .on("end", () => {
+            // Nakon ispune, pokreni drugu tranziciju (smanjivanje i nestajanje)
+            square.transition()
+              .duration(expandDuration)
+              .attr("width", svgWidth / 2)
+              .attr("height", svgWidth / 2)
+              .attr("x", x + size / 4)
+              .attr("y", y + size / 4)
+              .attr("opacity", 0);
+          });
+
+        squares.push({ fillDuration, expandDuration });
+      }
+
+      // Izračunaj maksimalno trajanje svih animacija
+      const maxTime = Math.max(...squares.map(s => s.fillDuration + s.expandDuration)) + 1000;
+
+      // Nakon što sve animacije završe, ponovi postupak
+      setTimeout(generateSquares, maxTime);
+    }
+
+    generateSquares();
+  </script>
+</body>
+</html>

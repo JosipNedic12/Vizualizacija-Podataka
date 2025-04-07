@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Zadatak 4 - Reakcije kugli na materijale</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <h2>Zadatak 4 – Reakcije kugli na materijale</h2>
+  <svg width="600" height="400" id="svgCanvas" style="border:1px solid #ccc;"></svg>
+
+  <script>
+    const svg = d3.select("#svgCanvas");
+    const width = 600;
+    const height = 400;
+
+    const ballRadius = 20;
+    const materialsY = 350;
+    const fallDuration = 2000;
+
+    const materials = [
+      { x: 100, color: "red", type: "solid" },
+      { x: 275, color: "green", type: "elastic" },
+      { x: 450, color: "blue", type: "liquid" }
+    ];
+
+    svg.selectAll("rect")
+      .data(materials)
+      .enter()
+      .append("rect")
+      .attr("x", d => d.x)
+      .attr("y", materialsY)
+      .attr("width", 100)
+      .attr("height", 40)
+      .attr("fill", d => d.color);
+
+    svg.selectAll("circle")
+      .data(materials)
+      .enter()
+      .append("circle")
+      .attr("cx", d => d.x + 50)
+      .attr("cy", 50)
+      .attr("r", ballRadius)
+      .attr("fill", "gray")
+      .each(function (d) {
+        const circle = d3.select(this);
+        circle.transition()
+          .duration(fallDuration)
+          .attr("cy", materialsY - ballRadius)
+          .ease(d3.easeLinear)
+          .on("end", function () {
+            if (d.type === "solid") {
+            } else if (d.type === "elastic") {
+              circle.transition()
+                .duration(1000)
+                .attr("cy", materialsY - ballRadius - 80)
+                .ease(d3.easeCubicOut)
+                .transition()
+                .duration(1000)
+                .attr("cy", materialsY - ballRadius)
+                .ease(d3.easeCubicIn);
+            } else if (d.type === "liquid") {
+              circle.transition()
+                .duration(1000)
+                .attr("cy", materialsY + 15)
+                .ease(d3.easeCubicOut);
+            }
+          });
+      });
+  </script>
+</body>
+</html>
