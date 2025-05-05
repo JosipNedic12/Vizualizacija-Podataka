@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Karta RH sa Zoomom i Podacima</title>
+  <script src="https://d3js.org/d3.v3.min.js"></script>
+  <script src="https://d3js.org/topojson.v1.min.js"></script>
+  <style>
+    .county { cursor: pointer; stroke: #333; stroke-width: 1px; }
+    #info {
+      position: absolute; top: 20px; left: 20px; padding: 10px;
+      background: white; border: 1px solid #ccc; font-family: sans-serif;
+      min-width: 200px; z-index: 10;
+    }
+    .legend { font-size: 12px; font-family: sans-serif; }
+  </style>
+</head>
+<body>
+  <div id="info">Zadržite miša iznad županije</div>
+  <script>
+    var width = 960, height = 700;
+    var projection = d3.geo.mercator()
+      .center([0, 10]).scale(6000)
+      .translate([17600, 4500]).rotate([-180, 0]);
+    var path = d3.geo.path().projection(projection);
+
+    var zoom = d3.behavior.zoom()
+      .scaleExtent([0.5, 8])
+      .on("zoom", zoomed);
+
+    var svg = d3.select("body").append("svg")
+      .attr("width", width).attr("height", height)
+      .style("background", "black")
+      .call(zoom);
+
+    var container = svg.append("g");
+    var info = d3.select("#info");
+    var infoLocked = false;
+    var resetTimeout = null;
+
+    d3.json("cro.json", function(error, cro) {
+      if (error) return console.error(error);
+      var data = topojson.feature(cro, cro.objects.layer1);
+
+      // Skala boje po broju stanovnika
+      var populations = data.features.map(function(d) { return d.properties.population; });
+      var popExtent = d3.extent(populations);
+      var color = d3.scale.linear().domain([popExtent[0], popExtent[1]]).range(["#fee5d9", "#a50f15"]);
+
+      container.selectAll("path.county")
+        .data(data.features)
+        .enter().append("path")
+        .attr("class", "county")
+        .attr("id", function(d) { return d.id; })
+        .attr("d", path)
+        .style("fill", function(d) { return color(d.properties.population); })
+        .on("mouseover", function(d) {
+          if (!infoLocked) {
+            info.html(
+              "<b>Županija:</b> " + d.properties.name + "<br>" +
+              "<b>Stanovništvo:</b> " + d.properties.population + "<br>" +
+              "<b>Površina:</b> " + d.properties.area + " km²<br>" +
+              "<b>Župan:</b> " + d.properties.mayor
+            );
+          }
+        })
+        .on("mouseout", function() {
+          if (!infoLocked) {
+            info.text("Zadržite miša iznad županije");
+          }
+        })
+        .on("click", function(d) {
+          // Zaustavi prethodni timeout ako postoji
+          if (resetTimeout) clearTimeout(resetTimeout);
+          infoLocked = true;
+
+          info.html(
+            "<b>Županija:</b> " + d.properties.name + "<br>" +
+            "<b>Stanovništvo:</b> " + d.properties.population + "<br>" +
+            "<b>Površina:</b> " + d.properties.area + " km²<br>" +
+            "<b>Župan:</b> " + d.properties.mayor
+          );
+
+          // Izračunaj bounding box selektirane županije
+          var bounds = path.bounds(d),
+              dx = bounds[1][0] - bounds[0][0],
+              dy = bounds[1][1] - bounds[0][1],
+              x = (bounds[0][0] + bounds[1][0]) / 2,
+              y = (bounds[0][1] + bounds[1][1]) / 2,
+              scale = Math.max(1, Math.min(8, 0.8 / Math.max(dx / width, dy / height))),
+              translate = [width / 2 - scale * x, height / 2 - scale * y];
+
+          svg.transition()
+            .duration(750)
+            .call(zoom.translate(translate).scale(scale).event);
+
+          // Automatski povratak nakon 10 sekundi
+          resetTimeout = setTimeout(function() {
+            svg.transition()
+              .duration(750)
+              .call(zoom.translate([0,0]).scale(1).event);
+            infoLocked = false;
+            info.text("Zadržite miša iznad županije");
+          }, 10000);
+        });
+
+      // Legenda
+      var legendWidth = 300, legendHeight = 10;
+      var legendSvg = svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", "translate(50, 650)");
+      var defs = svg.append("defs");
+      var linearGradient = defs.append("linearGradient").attr("id", "legend-gradient");
+      linearGradient.selectAll("stop")
+        .data([{offset: "0%", color: "#fee5d9"}, {offset: "100%", color: "#a50f15"}])
+        .enter().append("stop")
+        .attr("offset", function(d) { return d.offset; })
+        .attr("stop-color", function(d) { return d.color; });
+      legendSvg.append("rect")
+        .attr("width", legendWidth)
+        .attr("height", legendHeight)
+        .style("fill", "url(#legend-gradient)");
+      legendSvg.append("text")
+        .attr("x", 0).attr("y", 25).text(popExtent[0]).style("fill", "#fff");
+      legendSvg.append("text")
+        .attr("x", legendWidth).attr("y", 25).attr("text-anchor", "end")
+        .text(popExtent[1]).style("fill", "#fff");
+      legendSvg.append("text")
+        .attr("x", legendWidth/2).attr("y", 40).attr("text-anchor", "middle")
+        .style("fill", "#fff").text("Broj stanovnika");
+    });
+
+    function zoomed() {
+      container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    }
+  </script>
+</body>
+</html>
